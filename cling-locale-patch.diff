@@ -1,0 +1,922 @@
+diff --git a/core/src/main/java/org/fourthline/cling/binding/annotations/AnnotationLocalServiceBinder.java b/core/src/main/java/org/fourthline/cling/binding/annotations/AnnotationLocalServiceBinder.java
+index 27e7716..204a126 100644
+--- a/core/src/main/java/org/fourthline/cling/binding/annotations/AnnotationLocalServiceBinder.java
++++ b/core/src/main/java/org/fourthline/cling/binding/annotations/AnnotationLocalServiceBinder.java
+@@ -47,6 +47,7 @@ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.Map;
+ import java.util.Set;
++import java.util.Locale;
+ import java.util.logging.Logger;
+ 
+ /**
+@@ -256,14 +257,14 @@ public class AnnotationLocalServiceBinder implements LocalServiceBinder {
+         if (javaName.length() < 1) {
+             throw new IllegalArgumentException("Variable name must be at least 1 character long");
+         }
+-        return javaName.substring(0, 1).toUpperCase() + javaName.substring(1);
++        return javaName.substring(0, 1).toUpperCase(Locale.ENGLISH) + javaName.substring(1);
+     }
+ 
+     static String toJavaStateVariableName(String upnpName) {
+         if (upnpName.length() < 1) {
+             throw new IllegalArgumentException("Variable name must be at least 1 character long");
+         }
+-        return upnpName.substring(0, 1).toLowerCase() + upnpName.substring(1);
++        return upnpName.substring(0, 1).toLowerCase(Locale.ENGLISH) + upnpName.substring(1);
+     }
+ 
+ 
+@@ -271,14 +272,14 @@ public class AnnotationLocalServiceBinder implements LocalServiceBinder {
+         if (javaName.length() < 1) {
+             throw new IllegalArgumentException("Action name must be at least 1 character long");
+         }
+-        return javaName.substring(0, 1).toUpperCase() + javaName.substring(1);
++        return javaName.substring(0, 1).toUpperCase(Locale.ENGLISH) + javaName.substring(1);
+     }
+ 
+     static String toJavaActionName(String upnpName) {
+         if (upnpName.length() < 1) {
+             throw new IllegalArgumentException("Variable name must be at least 1 character long");
+         }
+-        return upnpName.substring(0, 1).toLowerCase() + upnpName.substring(1);
++        return upnpName.substring(0, 1).toLowerCase(Locale.ENGLISH) + upnpName.substring(1);
+     }
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/core/src/main/java/org/fourthline/cling/binding/xml/UDA10ServiceDescriptorBinderImpl.java b/core/src/main/java/org/fourthline/cling/binding/xml/UDA10ServiceDescriptorBinderImpl.java
+index 230ad16..0e29b82 100644
+--- a/core/src/main/java/org/fourthline/cling/binding/xml/UDA10ServiceDescriptorBinderImpl.java
++++ b/core/src/main/java/org/fourthline/cling/binding/xml/UDA10ServiceDescriptorBinderImpl.java
+@@ -43,6 +43,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
+ import java.io.StringReader;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Locale;
+ import java.util.logging.Logger;
+ 
+ import static org.fourthline.cling.binding.xml.Descriptor.Service.ATTRIBUTE;
+@@ -236,7 +237,7 @@ public class UDA10ServiceDescriptorBinderImpl implements ServiceDescriptorBinder
+             if (ELEMENT.name.equals(argumentNodeChild)) {
+                 actionArgument.name = XMLUtil.getTextContent(argumentNodeChild);
+             } else if (ELEMENT.direction.equals(argumentNodeChild)) {
+-                actionArgument.direction = ActionArgument.Direction.valueOf(XMLUtil.getTextContent(argumentNodeChild).toUpperCase());
++                actionArgument.direction = ActionArgument.Direction.valueOf(XMLUtil.getTextContent(argumentNodeChild).toUpperCase(Locale.ENGLISH));
+             } else if (ELEMENT.relatedStateVariable.equals(argumentNodeChild)) {
+                 actionArgument.relatedStateVariable = XMLUtil.getTextContent(argumentNodeChild);
+             } else if (ELEMENT.retval.equals(argumentNodeChild)) {
+@@ -266,7 +267,7 @@ public class UDA10ServiceDescriptorBinderImpl implements ServiceDescriptorBinder
+ 
+         stateVariable.eventDetails = new StateVariableEventDetails(
+                 stateVariableElement.getAttribute("sendEvents") != null &&
+-                        stateVariableElement.getAttribute(ATTRIBUTE.sendEvents.toString()).toUpperCase().equals("YES")
++                        stateVariableElement.getAttribute(ATTRIBUTE.sendEvents.toString()).toUpperCase(Locale.ENGLISH).equals("YES")
+         );
+ 
+         NodeList stateVariableChildren = stateVariableElement.getChildNodes();
+@@ -411,7 +412,7 @@ public class UDA10ServiceDescriptorBinderImpl implements ServiceDescriptorBinder
+         Element actionArgumentElement = appendNewElement(descriptor, actionElement, ELEMENT.argument);
+ 
+         appendNewElementIfNotNull(descriptor, actionArgumentElement, ELEMENT.name, actionArgument.getName());
+-        appendNewElementIfNotNull(descriptor, actionArgumentElement, ELEMENT.direction, actionArgument.getDirection().toString().toLowerCase());
++        appendNewElementIfNotNull(descriptor, actionArgumentElement, ELEMENT.direction, actionArgument.getDirection().toString().toLowerCase(Locale.ENGLISH));
+         if (actionArgument.isReturnValue()) {
+             appendNewElement(descriptor, actionArgumentElement, ELEMENT.retval);
+         }
+diff --git a/core/src/main/java/org/fourthline/cling/binding/xml/UDA10ServiceDescriptorBinderSAXImpl.java b/core/src/main/java/org/fourthline/cling/binding/xml/UDA10ServiceDescriptorBinderSAXImpl.java
+index c17b215..9bfad17 100644
+--- a/core/src/main/java/org/fourthline/cling/binding/xml/UDA10ServiceDescriptorBinderSAXImpl.java
++++ b/core/src/main/java/org/fourthline/cling/binding/xml/UDA10ServiceDescriptorBinderSAXImpl.java
+@@ -36,6 +36,7 @@ import org.xml.sax.SAXException;
+ import java.io.StringReader;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Locale;
+ import java.util.logging.Logger;
+ 
+ import static org.fourthline.cling.binding.xml.Descriptor.Service.ATTRIBUTE;
+@@ -238,7 +239,7 @@ public class UDA10ServiceDescriptorBinderSAXImpl extends UDA10ServiceDescriptorB
+                     getInstance().name = getCharacters();
+                     break;
+                 case direction:
+-                    getInstance().direction = ActionArgument.Direction.valueOf(getCharacters().toUpperCase());
++                    getInstance().direction = ActionArgument.Direction.valueOf(getCharacters().toUpperCase(Locale.ENGLISH));
+                     break;
+                 case relatedStateVariable:
+                     getInstance().relatedStateVariable = getCharacters();
+@@ -270,7 +271,7 @@ public class UDA10ServiceDescriptorBinderSAXImpl extends UDA10ServiceDescriptorB
+ 
+                 String sendEventsAttributeValue = attributes.getValue(ATTRIBUTE.sendEvents.toString());
+                 stateVariable.eventDetails = new StateVariableEventDetails(
+-                        sendEventsAttributeValue != null && sendEventsAttributeValue.toUpperCase().equals("YES")
++                        sendEventsAttributeValue != null && sendEventsAttributeValue.toUpperCase(Locale.ENGLISH).equals("YES")
+                 );
+ 
+                 getInstance().add(stateVariable);
+@@ -439,4 +440,4 @@ public class UDA10ServiceDescriptorBinderSAXImpl extends UDA10ServiceDescriptorB
+         }
+     }
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/core/src/main/java/org/fourthline/cling/model/ModelUtil.java b/core/src/main/java/org/fourthline/cling/model/ModelUtil.java
+index 102ceb6..c6d22db 100644
+--- a/core/src/main/java/org/fourthline/cling/model/ModelUtil.java
++++ b/core/src/main/java/org/fourthline/cling/model/ModelUtil.java
+@@ -22,6 +22,7 @@ import java.net.NetworkInterface;
+ import java.util.Collections;
+ import java.util.Enumeration;
+ import java.util.Set;
++import java.util.Locale;
+ 
+ /**
+  * Shared trivial procedures.
+@@ -86,7 +87,7 @@ public class ModelUtil {
+         if (ANDROID_RUNTIME) {
+             return name != null && name.length() != 0;
+         }
+-        return name != null && name.length() != 0 && !name.toLowerCase().startsWith("xml") && name.matches(Constants.REGEX_UDA_NAME);
++        return name != null && name.length() != 0 && !name.toLowerCase(Locale.ENGLISH).startsWith("xml") && name.matches(Constants.REGEX_UDA_NAME);
+     }
+ 
+     /**
+@@ -243,4 +244,4 @@ public class ModelUtil {
+         throw new RuntimeException("Could not discover first network interface hardware address");
+     }
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/core/src/main/java/org/fourthline/cling/model/message/UpnpRequest.java b/core/src/main/java/org/fourthline/cling/model/message/UpnpRequest.java
+index 15fc134..1af9830 100644
+--- a/core/src/main/java/org/fourthline/cling/model/message/UpnpRequest.java
++++ b/core/src/main/java/org/fourthline/cling/model/message/UpnpRequest.java
+@@ -22,6 +22,7 @@ import java.net.URL;
+ import java.net.URISyntaxException;
+ import java.util.HashMap;
+ import java.util.Map;
++import java.util.Locale;
+ 
+ /**
+  * A request message, with a method (GET, POST, NOTIFY, etc).
+@@ -58,7 +59,7 @@ public class UpnpRequest extends UpnpOperation {
+ 
+         public static Method getByHttpName(String httpName) {
+             if (httpName == null) return UNKNOWN;
+-        	Method m = byName.get(httpName.toUpperCase());
++        	Method m = byName.get(httpName.toUpperCase(Locale.ENGLISH));
+             return m != null ? m : UNKNOWN;
+         }
+     }
+diff --git a/core/src/main/java/org/fourthline/cling/model/message/header/MaxAgeHeader.java b/core/src/main/java/org/fourthline/cling/model/message/header/MaxAgeHeader.java
+index 67314f4..807eadc 100644
+--- a/core/src/main/java/org/fourthline/cling/model/message/header/MaxAgeHeader.java
++++ b/core/src/main/java/org/fourthline/cling/model/message/header/MaxAgeHeader.java
+@@ -21,6 +21,7 @@ import org.fourthline.cling.model.Constants;
+ 
+ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
++import java.util.Locale;
+ 
+ /**
+  * @author Christian Bauer
+@@ -40,7 +41,7 @@ public class MaxAgeHeader extends UpnpHeader<Integer> {
+ 
+     public void setString(String s) throws InvalidHeaderException {
+ 
+-        Matcher matcher = MAX_AGE_REGEX.matcher(s.toLowerCase());
++        Matcher matcher = MAX_AGE_REGEX.matcher(s.toLowerCase(Locale.ENGLISH));
+         if (!matcher.matches()){
+             throw new InvalidHeaderException("Invalid cache-control value, can't parse max-age seconds: " + s);
+         }
+diff --git a/core/src/main/java/org/fourthline/cling/model/message/header/NTEventHeader.java b/core/src/main/java/org/fourthline/cling/model/message/header/NTEventHeader.java
+index 43b2c0b..d56816c 100644
+--- a/core/src/main/java/org/fourthline/cling/model/message/header/NTEventHeader.java
++++ b/core/src/main/java/org/fourthline/cling/model/message/header/NTEventHeader.java
+@@ -17,6 +17,8 @@
+ 
+ package org.fourthline.cling.model.message.header;
+ 
++import java.util.Locale;
++
+ /**
+  * @author Christian Bauer
+  */
+@@ -27,7 +29,7 @@ public class NTEventHeader extends UpnpHeader<String> {
+     }
+ 
+     public void setString(String s) throws InvalidHeaderException {
+-        if (!s.toLowerCase().equals(getValue())) {
++        if (!s.toLowerCase(Locale.ENGLISH).equals(getValue())) {
+             throw new InvalidHeaderException("Invalid event NT header value: " + s);
+         }
+     }
+@@ -36,4 +38,4 @@ public class NTEventHeader extends UpnpHeader<String> {
+         return getValue();
+     }
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/core/src/main/java/org/fourthline/cling/model/message/header/RootDeviceHeader.java b/core/src/main/java/org/fourthline/cling/model/message/header/RootDeviceHeader.java
+index 547bef8..ce74e19 100644
+--- a/core/src/main/java/org/fourthline/cling/model/message/header/RootDeviceHeader.java
++++ b/core/src/main/java/org/fourthline/cling/model/message/header/RootDeviceHeader.java
+@@ -17,6 +17,8 @@
+ 
+ package org.fourthline.cling.model.message.header;
+ 
++import java.util.Locale;
++
+ /**
+  * @author Christian Bauer
+  */
+@@ -27,7 +29,7 @@ public class RootDeviceHeader extends UpnpHeader<String> {
+     }
+ 
+     public void setString(String s) throws InvalidHeaderException {
+-        if (!s.toLowerCase().equals(getValue())) {
++        if (!s.toLowerCase(Locale.ENGLISH).equals(getValue())) {
+             throw new InvalidHeaderException("Invalid root device NT header value: " + s);
+         }
+     }
+diff --git a/core/src/main/java/org/fourthline/cling/model/message/header/UpnpHeader.java b/core/src/main/java/org/fourthline/cling/model/message/header/UpnpHeader.java
+index 43ec5cd..46abc5f 100644
+--- a/core/src/main/java/org/fourthline/cling/model/message/header/UpnpHeader.java
++++ b/core/src/main/java/org/fourthline/cling/model/message/header/UpnpHeader.java
+@@ -21,6 +21,7 @@ import org.seamless.util.Exceptions;
+ 
+ import java.util.HashMap;
+ import java.util.Map;
++import java.util.Locale;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
+@@ -123,7 +124,7 @@ public abstract class UpnpHeader<T> {
+          */
+         public static Type getByHttpName(String httpName) {
+             if (httpName == null) return null;
+-        	return byName.get(httpName.toUpperCase());
++        	return byName.get(httpName.toUpperCase(Locale.ENGLISH));
+         }
+     }
+ 
+diff --git a/core/src/main/java/org/fourthline/cling/model/types/BooleanDatatype.java b/core/src/main/java/org/fourthline/cling/model/types/BooleanDatatype.java
+index 295a708..1689854 100644
+--- a/core/src/main/java/org/fourthline/cling/model/types/BooleanDatatype.java
++++ b/core/src/main/java/org/fourthline/cling/model/types/BooleanDatatype.java
+@@ -17,6 +17,8 @@
+ 
+ package org.fourthline.cling.model.types;
+ 
++import java.util.Locale;
++
+ /**
+  * @author Christian Bauer
+  */
+@@ -32,9 +34,9 @@ public class BooleanDatatype extends AbstractDatatype<Boolean> {
+ 
+     public Boolean valueOf(String s) throws InvalidValueException {
+         if (s.equals("")) return null;
+-        if (s.equals("1") || s.toUpperCase().equals("YES") || s.toUpperCase().equals("TRUE")) {
++        if (s.equals("1") || s.toUpperCase(Locale.ENGLISH).equals("YES") || s.toUpperCase(Locale.ENGLISH).equals("TRUE")) {
+             return true;
+-        } else if (s.equals("0") || s.toUpperCase().equals("NO") || s.toUpperCase().equals("FALSE")) {
++        } else if (s.equals("0") || s.toUpperCase(Locale.ENGLISH).equals("NO") || s.toUpperCase(Locale.ENGLISH).equals("FALSE")) {
+             return false;
+         } else {
+             throw new InvalidValueException("Invalid boolean value string: " + s);
+diff --git a/core/src/main/java/org/fourthline/cling/model/types/Datatype.java b/core/src/main/java/org/fourthline/cling/model/types/Datatype.java
+index 3b7c23c..a93893d 100644
+--- a/core/src/main/java/org/fourthline/cling/model/types/Datatype.java
++++ b/core/src/main/java/org/fourthline/cling/model/types/Datatype.java
+@@ -20,6 +20,7 @@ package org.fourthline.cling.model.types;
+ import java.util.Calendar;
+ import java.util.HashMap;
+ import java.util.Map;
++import java.util.Locale;
+ 
+ /**
+  * The type of a state variable value, able to convert to/from string representation.
+@@ -142,9 +143,9 @@ public interface Datatype<V> {
+         private static Map<String, Builtin> byName = new HashMap<String, Builtin>() {{
+             for (Builtin b : Builtin.values()) {
+                 // Lowercase descriptor name!
+-                if (containsKey(b.getDescriptorName().toLowerCase()))
++                if (containsKey(b.getDescriptorName().toLowerCase(Locale.ENGLISH)))
+                     continue; // Ignore double-declarations, take first one only
+-                put(b.getDescriptorName().toLowerCase(), b);
++                put(b.getDescriptorName().toLowerCase(Locale.ENGLISH), b);
+             }
+         }};
+ 
+@@ -170,7 +171,7 @@ public interface Datatype<V> {
+             // they are case sensitive. But we want to work with broken devices, which of
+             // course produce mixed upper/lowercase values.
+             if (descriptorName == null) return null;
+-            return byName.get(descriptorName.toLowerCase());
++            return byName.get(descriptorName.toLowerCase(Locale.ENGLISH));
+         }
+ 
+         public static boolean isNumeric(Builtin builtin) {
+diff --git a/core/src/main/java/org/fourthline/cling/transport/impl/DatagramProcessorImpl.java b/core/src/main/java/org/fourthline/cling/transport/impl/DatagramProcessorImpl.java
+index 25a1a7c..a7f4e98 100644
+--- a/core/src/main/java/org/fourthline/cling/transport/impl/DatagramProcessorImpl.java
++++ b/core/src/main/java/org/fourthline/cling/transport/impl/DatagramProcessorImpl.java
+@@ -34,6 +34,7 @@ import java.io.ByteArrayInputStream;
+ import java.io.UnsupportedEncodingException;
+ import java.net.DatagramPacket;
+ import java.net.InetAddress;
++import java.util.Locale;
+ 
+ /**
+  * Default implementation.
+@@ -129,7 +130,7 @@ public class DatagramProcessorImpl implements DatagramProcessor {
+         // Assemble message
+         IncomingDatagramMessage requestMessage;
+         UpnpRequest upnpRequest = new UpnpRequest(UpnpRequest.Method.getByHttpName(requestMethod));
+-        upnpRequest.setHttpMinorVersion(httpProtocol.toUpperCase().equals("HTTP/1.1") ? 1 : 0);
++        upnpRequest.setHttpMinorVersion(httpProtocol.toUpperCase(Locale.ENGLISH).equals("HTTP/1.1") ? 1 : 0);
+         requestMessage = new IncomingDatagramMessage(upnpRequest, datagram.getAddress(), datagram.getPort(), receivedOnAddress);
+ 
+         requestMessage.setHeaders(headers);
+@@ -150,7 +151,7 @@ public class DatagramProcessorImpl implements DatagramProcessor {
+         // Assemble the message
+         IncomingDatagramMessage responseMessage;
+         UpnpResponse upnpResponse = new UpnpResponse(statusCode, statusMessage);
+-        upnpResponse.setHttpMinorVersion(httpProtocol.toUpperCase().equals("HTTP/1.1") ? 1 : 0);
++        upnpResponse.setHttpMinorVersion(httpProtocol.toUpperCase(Locale.ENGLISH).equals("HTTP/1.1") ? 1 : 0);
+         responseMessage = new IncomingDatagramMessage(upnpResponse, datagram.getAddress(), datagram.getPort(), receivedOnAddress);
+ 
+         responseMessage.setHeaders(headers);
+diff --git a/core/src/main/java/org/fourthline/cling/transport/impl/HttpExchangeUpnpStream.java b/core/src/main/java/org/fourthline/cling/transport/impl/HttpExchangeUpnpStream.java
+index d855e2c..bcac742 100644
+--- a/core/src/main/java/org/fourthline/cling/transport/impl/HttpExchangeUpnpStream.java
++++ b/core/src/main/java/org/fourthline/cling/transport/impl/HttpExchangeUpnpStream.java
+@@ -32,6 +32,7 @@ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.OutputStream;
+ import java.net.HttpURLConnection;
++import java.util.Locale;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
+@@ -77,7 +78,7 @@ public class HttpExchangeUpnpStream extends UpnpStream {
+ 
+             // Protocol
+             requestMessage.getOperation().setHttpMinorVersion(
+-                    getHttpExchange().getProtocol().toUpperCase().equals("HTTP/1.1") ? 1 : 0
++                    getHttpExchange().getProtocol().toUpperCase(Locale.ENGLISH).equals("HTTP/1.1") ? 1 : 0
+             );
+ 
+             log.fine("Created new request message: " + requestMessage);
+diff --git a/core/src/main/java/org/fourthline/cling/transport/impl/NetworkAddressFactoryImpl.java b/core/src/main/java/org/fourthline/cling/transport/impl/NetworkAddressFactoryImpl.java
+index 977e0ac..9604ef5 100644
+--- a/core/src/main/java/org/fourthline/cling/transport/impl/NetworkAddressFactoryImpl.java
++++ b/core/src/main/java/org/fourthline/cling/transport/impl/NetworkAddressFactoryImpl.java
+@@ -38,6 +38,7 @@ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Properties;
+ import java.util.Set;
++import java.util.Locale;
+ import java.util.logging.Logger;
+ 
+ /**
+@@ -281,18 +282,18 @@ public class NetworkAddressFactoryImpl implements NetworkAddressFactory {
+             return false;
+         }
+ 
+-        if (iface.getName().toLowerCase().startsWith("vmnet") ||
+-        		(iface.getDisplayName() != null &&  iface.getDisplayName().toLowerCase().contains("vmnet"))) {
++        if (iface.getName().toLowerCase(Locale.ENGLISH).startsWith("vmnet") ||
++        		(iface.getDisplayName() != null &&  iface.getDisplayName().toLowerCase(Locale.ENGLISH).contains("vmnet"))) {
+             log.finer("Skipping network interface (VMWare): " + iface.getDisplayName());
+             return false;
+         }
+ 
+-        if (iface.getName().toLowerCase().startsWith("vnic")) {
++        if (iface.getName().toLowerCase(Locale.ENGLISH).startsWith("vnic")) {
+             log.finer("Skipping network interface (Parallels): " + iface.getDisplayName());
+             return false;
+         }
+ 
+-        if (iface.getName().toLowerCase().startsWith("ppp")) {
++        if (iface.getName().toLowerCase(Locale.ENGLISH).startsWith("ppp")) {
+             log.finer("Skipping network interface (PPP): " + iface.getDisplayName());
+             return false;
+         }
+diff --git a/core/src/test/java/org/fourthline/cling/test/model/HeaderParsingTest.java b/core/src/test/java/org/fourthline/cling/test/model/HeaderParsingTest.java
+index 85036f6..52062ab 100644
+--- a/core/src/test/java/org/fourthline/cling/test/model/HeaderParsingTest.java
++++ b/core/src/test/java/org/fourthline/cling/test/model/HeaderParsingTest.java
+@@ -30,6 +30,7 @@ import org.seamless.util.MimeType;
+ import org.testng.annotations.Test;
+ 
+ import java.net.URI;
++import java.util.Locale;
+ 
+ import static org.testng.Assert.assertEquals;
+ 
+@@ -473,7 +474,7 @@ public class HeaderParsingTest {
+     public void parseInterfaceMacAddress() {
+         InterfaceMacHeader header = new InterfaceMacHeader("00:17:ab:e9:65:a0");
+         assertEquals(header.getValue().length, 6);
+-        assertEquals(header.getString().toUpperCase(), "00:17:AB:E9:65:A0");
++        assertEquals(header.getString().toUpperCase(Locale.ENGLISH), "00:17:AB:E9:65:A0");
+     }
+ 
+     @Test
+diff --git a/core/pom.xml b/core/pom.xml
+new file mode 100644
+index 0000000..1864ee4
+--- /dev/null
++++ b/core/pom.xml
+@@ -0,0 +1,167 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0"
++         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++    <modelVersion>4.0.0</modelVersion>
++
++    <parent>
++        <groupId>org.fourthline.cling</groupId>
++        <artifactId>cling</artifactId>
++        <version>2.0-SNAPSHOT</version>
++    </parent>
++
++    <name>Cling Core</name>
++    <artifactId>cling-core</artifactId>
++    <packaging>jar</packaging>
++
++    <build>
++        <plugins>
++
++            <!-- Unit tests -->
++            <plugin>
++                <artifactId>maven-surefire-plugin</artifactId>
++                <configuration>
++                    <suiteXmlFiles>
++                        <suiteXmlFile>src/test/AllTests.tng.xml</suiteXmlFile>
++                    </suiteXmlFiles>
++                </configuration>
++            </plugin>
++
++            <!-- Source JARs -->
++            <plugin>
++                <artifactId>maven-source-plugin</artifactId>
++                <executions>
++                    <execution>
++                        <id>attach-sources</id>
++                        <goals>
++                            <goal>jar</goal>
++                        </goals>
++                    </execution>
++                </executions>
++            </plugin>
++
++            <!-- Prepare Javadoc for distribution packaging -->
++            <!--
++            <plugin>
++                <artifactId>maven-javadoc-plugin</artifactId>
++                <executions>
++                    <execution>
++                        <id>package-javadoc</id>
++                        <phase>prepare-package</phase>
++                        <goals>
++                            <goal>javadoc</goal>
++                        </goals>
++                    </execution>
++                </executions>
++            </plugin>
++            -->
++            <!-- Generate documentation for distribution packaging -->
++            <!--
++            <plugin>
++                <groupId>org.fourthline.lemma</groupId>
++                <artifactId>lemma-maven-plugin</artifactId>
++                <executions>
++                    <execution>
++                        <id>prepare-package-manual</id>
++                        <phase>prepare-package</phase>
++                        <goals>
++                            <goal>manual</goal>
++                        </goals>
++                    </execution>
++                </executions>
++            </plugin>
++            -->
++
++            <!-- Website lifecycle -->
++            <plugin>
++                <artifactId>maven-site-plugin</artifactId>
++                <configuration>
++                    <reportPlugins>
++                        <!-- THESE IGNORE GLOBAL PLUGIN MANAGEMENT! -->
++
++                        <!-- Build the manual for 'site' lifecycle -->
++                        <!--
++                        <plugin>
++                            <groupId>org.fourthline.lemma</groupId>
++                            <artifactId>lemma-maven-plugin</artifactId>
++                            <reportSets>
++                                <reportSet>
++                                    <reports>
++                                        <report>site-manual</report>
++                                    </reports>
++                                </reportSet>
++                            </reportSets>
++                        </plugin>
++                        -->
++                        <!-- Javadoc on the website -->
++                        <!--
++                        <plugin>
++                            <artifactId>maven-javadoc-plugin</artifactId>
++                            <reports>
++                                <report>javadoc</report>
++                            </reports>
++                            <configuration>
++                                <quiet>true</quiet>
++                                <detectOfflineLinks>false</detectOfflineLinks>
++                            </configuration>
++                        </plugin>
++                        -->
++                        <!-- We want cross-referenced source code -->
++                        <!--
++                        <plugin>
++                            <artifactId>maven-jxr-plugin</artifactId>
++                        </plugin>
++                        -->
++                    </reportPlugins>
++                </configuration>
++            </plugin>
++
++        </plugins>
++    </build>
++
++    <dependencies>
++        <dependency>
++            <groupId>org.seamless</groupId>
++            <artifactId>seamless-util</artifactId>
++            <version>${seamless.version}</version>
++        </dependency>
++        <dependency>
++            <groupId>org.seamless</groupId>
++            <artifactId>seamless-http</artifactId>
++            <version>${seamless.version}</version>
++        </dependency>
++        <dependency>
++            <groupId>org.seamless</groupId>
++            <artifactId>seamless-xml</artifactId>
++            <version>${seamless.version}</version>
++        </dependency>
++        <dependency>
++            <groupId>org.apache.httpcomponents</groupId>
++            <artifactId>httpcore</artifactId>
++            <version>${apache.httpcomponents.version}</version>
++            <scope>compile</scope>
++            <optional>true</optional>
++        </dependency>
++        <dependency>
++            <groupId>org.apache.httpcomponents</groupId>
++            <artifactId>httpclient</artifactId>
++            <version>${apache.httpcomponents.version}</version>
++            <scope>compile</scope>
++            <optional>true</optional>
++        </dependency>
++        <dependency>
++            <groupId>com.google.android</groupId>
++            <artifactId>android</artifactId>
++            <version>${android.version}</version>
++            <scope>compile</scope>
++            <optional>true</optional>
++        </dependency>
++        <dependency>
++            <groupId>javax.enterprise</groupId>
++            <artifactId>cdi-api</artifactId>
++            <version>${cdi.api.version}</version>
++            <scope>provided</scope>
++        </dependency>
++    </dependencies>
++
++</project>
+diff --git a/pom.xml b/pom.xml
+new file mode 100644
+index 0000000..68bc5bf
+--- /dev/null
++++ b/pom.xml
+@@ -0,0 +1,312 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0"
++         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++    <modelVersion>4.0.0</modelVersion>
++
++    <!-- ##################################################################################################### -->
++
++    <groupId>org.fourthline.cling</groupId>
++    <artifactId>cling</artifactId>
++    <packaging>pom</packaging>
++    <version>2.0-SNAPSHOT</version>
++
++    <modules>
++        <module>core</module>
++        <module>workbench</module>
++        <module>website</module>
++        <module>distribution</module>
++        <module>support</module>
++        <module>mediarenderer</module>
++        <module>bridge</module>
++        <module>osgi</module>
++    </modules>
++
++    <!-- ##################################################################################################### -->
++
++    <name>Cling</name>
++    <url>http://4thline.org/projects/cling/</url>
++
++    <licenses>
++        <license>
++            <name>GNU Lesser General Public License, Version 2.1 or later</name>
++            <url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
++            <distribution>repo</distribution>
++        </license>
++    </licenses>
++
++    <organization>
++        <name>4th Line GmbH, Switzerland</name>
++        <url>http://4thline.com</url>
++    </organization>
++
++    <developers>
++        <developer>
++            <id>cb</id>
++            <name>Christian Bauer</name>
++            <email>cb_AT_4thline.com</email>
++            <organization>4th Line GmbH, Switzerland</organization>
++            <organizationUrl>http://4thline.com</organizationUrl>
++            <roles>
++                <role>Project Lead</role>
++            </roles>
++            <timezone>+1</timezone>
++        </developer>
++    </developers>
++
++    <distributionManagement>
++        <repository>
++            <id>4thline.org</id>
++            <url>scpexe://4thline.org/webroot/vhosts/8080/4thline.org/m2/</url>
++        </repository>
++    </distributionManagement>
++
++    <!-- ##################################################################################################### -->
++
++    <properties>
++        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
++        <maven.compiler.source>6</maven.compiler.source>
++        <maven.compiler.target>6</maven.compiler.target>
++
++        <seamless.version>1.0-SNAPSHOT</seamless.version>
++        <testng.version>6.2</testng.version>
++        <apache.httpcomponents.version>4.0.1</apache.httpcomponents.version>
++        <android.version>2.1_r1</android.version>
++        <jetty.version>7.1.6.v20100715</jetty.version>
++        <cdi.api.version>1.0-SP4</cdi.api.version>
++        <ejb.api.version>3.0</ejb.api.version>
++        <servlet.api.version>2.5</servlet.api.version>
++        <resteasy.version>2.0.1.GA</resteasy.version>
++        <slf4j.version>1.6.1</slf4j.version>
++        <slf4j.bridge.version>1.5.11</slf4j.bridge.version>
++        <jna.version>3.2.5</jna.version>
++        <gstreamer.version>1.4</gstreamer.version>
++        <args4j.version>2.0.12</args4j.version>
++        <weld.version>1.1.10.Final</weld.version>
++        <javassist.version>3.14.0-GA</javassist.version>
++        <osgi.version>4.2.0</osgi.version>
++        <commons.codec.version>1.4</commons.codec.version>
++        <commons.logging.version>1.1.1</commons.logging.version>
++        <paxexam.version>1.2.4</paxexam.version>
++        <felix.version>1.4.0</felix.version>
++
++    </properties>
++
++    <!-- ##################################################################################################### -->
++
++    <repositories>
++        <repository>
++            <id>4thline-repo</id>
++            <url>http://4thline.org/m2</url>
++            <snapshots>
++                <enabled>true</enabled>
++            </snapshots>
++        </repository>
++        <repository>
++            <id>maven2-repository.dev.java.net</id>
++            <url>http://download.java.net/maven/2</url>
++            <snapshots>
++                <enabled>false</enabled>
++            </snapshots>
++        </repository>
++        <repository>
++            <id>restlet-repo</id>
++            <url>http://maven.restlet.org</url>
++            <snapshots>
++                <enabled>false</enabled>
++            </snapshots>
++        </repository>
++        <repository>
++            <id>jboss-repo</id>
++            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
++            <snapshots>
++                <enabled>false</enabled>
++            </snapshots>
++        </repository>
++    </repositories>
++
++    <pluginRepositories>
++        <pluginRepository>
++            <id>4thline-repo</id>
++            <url>http://4thline.org/m2</url>
++            <snapshots>
++                <enabled>true</enabled>
++            </snapshots>
++        </pluginRepository>
++        <pluginRepository>
++            <id>maven2-repository.dev.java.net</id>
++            <url>http://download.java.net/maven/2</url>
++            <snapshots>
++                <enabled>false</enabled>
++            </snapshots>
++        </pluginRepository>
++        <pluginRepository>
++            <id>onejar-maven-plugin.googlecode.com</id>
++            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
++            <snapshots>
++                <enabled>false</enabled>
++            </snapshots>
++        </pluginRepository>
++    </pluginRepositories>
++
++    <!-- ##################################################################################################### -->
++
++    <build>
++
++        <pluginManagement>
++            <plugins>
++                
++                <!-- Assembly -->
++                <plugin>
++                    <artifactId>maven-assembly-plugin</artifactId>
++                    <version>2.2.1</version>
++                </plugin>
++
++                <!-- Unit tests -->
++                <plugin>
++                    <artifactId>maven-surefire-plugin</artifactId>
++                    <version>2.9</version>
++                    <configuration>
++                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
++                    </configuration>
++                </plugin>
++
++                <!-- Javadoc generation settings -->
++                <plugin>
++                    <artifactId>maven-javadoc-plugin</artifactId>
++                    <version>2.8</version>
++                    <configuration>
++                        <quiet>true</quiet>
++                    </configuration>
++                </plugin>
++
++                <!-- Source JARs -->
++                <plugin>
++                    <artifactId>maven-source-plugin</artifactId>
++                    <version>2.1.2</version>
++                </plugin>
++
++                <!-- Cross-referenced source code -->
++                <plugin>
++                    <artifactId>maven-jxr-plugin</artifactId>
++                    <version>2.1</version>
++                </plugin>
++
++                <!-- Deploy phase -->
++                <plugin>
++                    <artifactId>maven-deploy-plugin</artifactId>
++                    <version>2.7</version>
++                </plugin>
++
++                <!-- Ant fallback -->
++                <plugin>
++                    <artifactId>maven-antrun-plugin</artifactId>
++                    <version>1.3</version>
++                </plugin>
++
++                <!-- Cleanup -->
++                <plugin>
++                    <artifactId>maven-clean-plugin</artifactId>
++                    <version>2.4.1</version>
++                </plugin>
++
++                <!-- WAR bundle for bridge -->
++                <plugin>
++                    <artifactId>maven-war-plugin</artifactId>
++                    <version>2.1</version>
++                </plugin>
++
++                <!-- Website lifecycle -->
++                <plugin>
++                    <artifactId>maven-site-plugin</artifactId>
++                    <version>3.0-beta-3</version>
++                    <dependencies>
++                        <!-- We have raw XHTML files -->
++                        <dependency>
++                            <groupId>org.apache.maven.doxia</groupId>
++                            <artifactId>doxia-module-xhtml</artifactId>
++                            <version>1.1.2</version>
++                        </dependency>
++                    </dependencies>
++                </plugin>
++
++                <!-- OSGi bundles -->
++                <plugin>
++                    <groupId>org.apache.felix</groupId>
++                    <artifactId>maven-bundle-plugin</artifactId>
++                    <version>2.3.4</version>
++                </plugin>
++
++                <!-- One-JAR executable -->
++                <plugin>
++                    <groupId>org.dstovall</groupId>
++                    <artifactId>onejar-maven-plugin</artifactId>
++                    <version>1.4.4</version>
++                </plugin>
++
++                <!-- OS X executable -->
++                <plugin>
++                    <groupId>org.codehaus.mojo</groupId>
++                    <artifactId>osxappbundle-maven-plugin</artifactId>
++                    <version>1.0-alpha-2</version>
++                </plugin>
++
++                <!-- Manual generation settings -->
++                <plugin>
++                    <groupId>org.fourthline.lemma</groupId>
++                    <artifactId>lemma-maven-plugin</artifactId>
++                    <version>1.1-SNAPSHOT</version>
++                </plugin>
++
++            </plugins>
++
++        </pluginManagement>
++
++        <!-- Required for we-don't-care-about-compatibility-Maven3 'deploy' goal -->
++        <extensions>
++            <extension>
++                <groupId>org.apache.maven.wagon</groupId>
++                <artifactId>wagon-ssh-external</artifactId>
++                <version>1.0-beta-7</version>
++            </extension>
++        </extensions>
++
++    </build>
++
++    <!-- ##################################################################################################### -->
++
++    <reporting>
++        <excludeDefaults>true</excludeDefaults>
++    </reporting>
++
++    <!-- ##################################################################################################### -->
++
++    <dependencies>
++
++        <dependency>
++            <groupId>org.testng</groupId>
++            <artifactId>testng</artifactId>
++            <version>${testng.version}</version>
++            <scope>test</scope>
++            <exclusions>
++                <exclusion>
++                    <groupId>junit</groupId>
++                    <artifactId>junit</artifactId>
++                </exclusion>
++            </exclusions>
++        </dependency>
++
++    </dependencies>
++
++    <!-- ##################################################################################################### -->
++
++    <!--
++        Build only the core (or other module) manual, parent pom.xml's current directory (output in ./target/manual/)
++
++        mvn -N clean org.fourthline.lemma:lemma-maven-plugin:manual \
++            -Dmanual.templateFilename=cling-core-manual.xhtml \
++            -Dmanual.manualSourceDirectory=core/src/manual \
++            -Dmanual.testSourceDirectory=core/src/test
++    -->
++
++</project>
